@@ -81,17 +81,79 @@ const groups=[
  {title:"Thiết bị được cấp",icon:"05",fields:[["Thiết bị được cấp","textarea",false,null,true],["Size đồng phục","select",false,"XS|S|M|L|XL|XXL|Khác"]]},
  {title:"Khác",icon:"06",fields:[["Trạng thái","select",true,"Đang làm|Thử việc|Tạm nghỉ|Nghỉ thai sản|Đã nghỉ việc"],["Ghi chú","textarea",false,null,true]]}
 ];
-let current=0; const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
-function slug(s){return "f_"+s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").toLowerCase()}
-function renderSteps(){ $("#steps").innerHTML=groups.map((g,i)=>`<button type="button" class="step ${i===current?'active':''} ${i<current?'done':''}" data-step="${i}">${i+1}. ${g.title}</button>`).join(""); $$(".step").forEach(b=>b.onclick=()=>{current=+b.dataset.step;renderForm()}) }
-function renderField(f){const [label,type,required,options,full]=f,id=slug(label),req=required?"<em>*</em>":"";let control;if(type==="select")control=`<select id="${id}" name="${label}" ${required?'required':''}><option value="">Chọn ${label.toLowerCase()}</option>${options.split('|').map(x=>`<option>${x}</option>`).join('')}</select>`;else if(type==="textarea")control=`<textarea id="${id}" name="${label}" placeholder="Nhập ${label.toLowerCase()}..."></textarea>`;else control=`<input id="${id}" name="${label}" type="${type}" ${required?'required':''} placeholder="Nhập ${label.toLowerCase()}">`;return `<div class="field ${full?'full':''}"><label for="${id}">${label} ${req}</label>${control}</div>`}
-function renderForm(){const g=groups[current]; $("#formTitle").textContent=g.title; $("#formCaption").textContent=`Bước ${current+1}/6 • ${g.fields.length} trường thông tin`; $("#progressBar").style.width=((current+1)/6*100)+"%"; $("#formFields").innerHTML=`<h3 class="section-title"><span>${g.icon}</span>${g.title}</h3><div class="fields">${g.fields.map(renderField).join('')}</div>`; $("#prevStep").disabled=current===0; $("#nextStep").classList.toggle("hidden",current===5); $("#finishBtn").classList.toggle("hidden",current!==5); renderSteps()}
-function showToast(text){const t=$("#toast");t.textContent=text;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
-$$("#mainNav button").forEach(b=>b.onclick=()=>{$$("#mainNav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$('.view').forEach(v=>v.classList.add('hidden'));$('#'+b.dataset.view).classList.remove('hidden')});
-$("#addEmployee").onclick=()=>{$("#employeeList").classList.add("hidden");$("#employeeForm").classList.remove("hidden");current=0;renderForm();scrollTo(0,0)};
-$("#closeForm").onclick=()=>{$("#employeeForm").classList.add("hidden");$("#employeeList").classList.remove("hidden")};
-$("#prevStep").onclick=()=>{if(current>0){current--;renderForm();scrollTo(0,0)}}; $("#nextStep").onclick=()=>{if(current<5){current++;renderForm();scrollTo(0,0)}};
-$("#saveDraft").onclick=()=>showToast("Đã lưu bản nháp giao diện"); $("#hrForm").onsubmit=e=>{e.preventDefault();showToast("Đã hoàn tất hồ sơ nhân sự")};
+
+let current = 0; 
+const select = s => document.querySelector(s); 
+const selectAll = s => document.querySelectorAll(s);
+
+function slug(s){ return "f_" + s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").toLowerCase(); }
+
+function renderSteps(){ 
+  select("#steps").innerHTML = groups.map((g,i) => `<button type="button" class="step ${i===current?'active':''} ${i<current?'done':''}" data-step="${i}">${i+1}. ${g.title}</button>`).join(""); 
+  selectAll(".step").forEach(b => b.onclick = () => { current = +b.dataset.step; renderForm(); }); 
+}
+
+function renderField(f){
+  const [label, type, required, options, full] = f;
+  const id = slug(label);
+  const req = required ? "<em>*</em>" : "";
+  let control;
+  
+  if(type === "select") {
+    control = `<select id="${id}" name="${label}" ${required?'required':''}><option value="">Chọn ${label.toLowerCase()}</option>${options.split('|').map(x=>`<option>${x}</option>`).join('')}</select>`;
+  } else if(type === "textarea") {
+    control = `<textarea id="${id}" name="${label}" placeholder="Nhập ${label.toLowerCase()}..."></textarea>`;
+  } else {
+    control = `<input id="${id}" name="${label}" type="${type}" ${required?'required':''} placeholder="Nhập ${label.toLowerCase()}">`;
+  }
+  
+  return `<div class="field ${full?'full':''}"><label for="${id}">${label} ${req}</label>${control}</div>`;
+}
+
+function renderForm(){
+  const g = groups[current]; 
+  select("#formTitle").textContent = g.title; 
+  select("#formCaption").textContent = `Bước ${current+1}/6 • ${g.fields.length} trường thông tin`; 
+  select("#progressBar").style.width = ((current+1)/6*100) + "%"; 
+  select("#formFields").innerHTML = `<h3 class="section-title"><span>${g.icon}</span>${g.title}</h3><div class="fields">${g.fields.map(renderField).join('')}</div>`; 
+  select("#prevStep").disabled = current === 0; 
+  select("#nextStep").classList.toggle("hidden", current === 5); 
+  select("#finishBtn").classList.toggle("hidden", current !== 5); 
+  renderSteps();
+}
+
+function showToast(text){
+  const t = select("#toast");
+  t.textContent = text;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+selectAll("#mainNav button").forEach(b => b.onclick = () => {
+  selectAll("#mainNav button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  selectAll('.view').forEach(v => v.classList.add('hidden'));
+  select('#' + b.dataset.view).classList.remove('hidden');
+});
+
+select("#addEmployee").onclick = () => {
+  select("#employeeList").classList.add("hidden");
+  select("#employeeForm").classList.remove("hidden");
+  current = 0;
+  renderForm();
+  window.scrollTo(0, 0);
+};
+
+select("#closeForm").onclick = () => {
+  select("#employeeForm").classList.add("hidden");
+  select("#employeeList").classList.remove("hidden");
+};
+
+select("#prevStep").onclick = () => { if(current > 0) { current--; renderForm(); window.scrollTo(0, 0); } }; 
+select("#nextStep").onclick = () => { if(current < 5) { current++; renderForm(); window.scrollTo(0, 0); } };
+select("#saveDraft").onclick = () => showToast("Đã lưu bản nháp giao diện"); 
+select("#hrForm").onsubmit = e => { e.preventDefault(); showToast("Đã hoàn tất hồ sơ nhân sự"); };
+
 renderForm();
 </script>
 </body>
